@@ -50,29 +50,30 @@ function draw() {
 }
 
 function drawBuildScreen() {
-  // Draw sky
-  background(135, 206, 235); // Sky blue
+  // draw sky
+  background(135, 206, 235); //blue color
 
-  // Draw grass
+  // draw grass
   noStroke();
   fill(100, 200, 100);
   rect(0, height * 0.6, width, height * 0.4);
 
-  // Optional: sun and clouds for extra eye candy
+  //draw clouds
   drawSkyDecorations();
 
-  // Title text
   fill(0);
   textSize(32);
   textAlign(CENTER, CENTER);
   text("Click to build your creature!", width / 2, 40);
 
-  // Show placed body parts
+  text("Press S to save a picture!", width / 2, height / 1.1);
+
+  // show placed body parts
   for (let part of placedParts) {
     part.show();
   }
 
-  // Pick a new part to place if needed
+  // select body parts to be placed
   if (!currentPlacingPart && savedDrawing.length > 0) {
     let randomIndex = floor(random(savedDrawing.length));
     currentPlacingPart = savedDrawing[randomIndex];
