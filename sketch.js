@@ -1,40 +1,56 @@
-// save as picture at the end
-// name your creature
-// add background eyecandy
-// too much prompts
-// humanoid drawings
+let saveButton, clearButton, showButton;
+let backgroundMusic;
+let buttonClickSound;
 
-
-
+//starting game state
 let gameState = "title";
 let startButton;
 
 let currentPlacingPart;
+
 let buildReady = false;
 
 let prompts = ['BODY', 'LEGS', 'HEAD', 'ARMS'];
 let currentPrompt = "";
 
+//declaring the draw area
 let drawingArea = { x: 200, y: 100, w: 400, h: 300 };
+
+//array to set up body parts
 let drawnPoints = [];
-let savedDrawing = []; // Array of DrawingPart
-let placedParts = [];  // Array of PlacedPart
-let saveButton, clearButton, showButton;
+
+//array to store drawn parts
+let savedDrawing = [];
+
+//array to count all placed parts in build state
+let placedParts = [];
+
+function preload() {
+  //load the music
+  backgroundMusic = loadSound('assets/background_music.mp3');
+  buttonClickSound = loadSound('assets/button_click.mp3');
+}
+
 
 function setup() {
   let canvas = createCanvas(800, 500);
   canvas.parent("p5-canvas-container");
-  startButton = new Button(width / 2 - 200, height / 2 + 90, 400, 100, "Begin Construction!");
 
+  startButton = new Button(width / 2 - 200, height / 2 + 90, 400, 100, "Begin Construction!");
   saveButton = new Button(580, 420, 120, 40, "Save");
   clearButton = new Button(100, 420, 120, 40, "Clear");
   showButton = new Button(340, 420, 120, 40, "Show Saved");
+
+  if (!backgroundMusic.isPlaying()) {
+    backgroundMusic.setVolume(0.3)
+    backgroundMusic.loop();
+  }
 }
 
 function draw() {
-  background(180, 220, 255); // Light sky-blue
+  background(180, 220, 255); // sky color
 
-  // Some stars or clouds
+  // cloud and sun
   for (let i = 0; i < 50; i++) {
     fill(255, 255, 255, 150);
     ellipse(random(width), random(height), random(2, 6));
@@ -51,15 +67,30 @@ function draw() {
 
 function drawBuildScreen() {
   // draw sky
-  background(135, 206, 235); //blue color
+  background(135, 206, 235);
 
   // draw grass
   noStroke();
   fill(100, 200, 100);
   rect(0, height * 0.6, width, height * 0.4);
 
-  //draw clouds
-  drawSkyDecorations();
+  // draw sun
+  fill(255, 255, 100);
+  ellipse(80, 80, 80, 80);
+
+  // draw sun
+  fill(255, 255, 255, 230);
+  ellipse(200, 100, 60, 60);
+  ellipse(230, 110, 50, 50);
+  ellipse(170, 110, 50, 50);
+
+  ellipse(500, 70, 60, 60);
+  ellipse(530, 80, 50, 50);
+  ellipse(470, 80, 50, 50);
+
+  ellipse(650, 130, 60, 60);
+  ellipse(680, 140, 50, 50);
+  ellipse(620, 140, 50, 50);
 
   fill(0);
   textSize(32);
@@ -78,17 +109,14 @@ function drawBuildScreen() {
     let randomIndex = floor(random(savedDrawing.length));
     currentPlacingPart = savedDrawing[randomIndex];
   }
-
+  //tells you what body part is being placed
   if (currentPlacingPart) {
     fill(0);
     textSize(20);
     textAlign(LEFT, BOTTOM);
     text("Placing: " + currentPlacingPart.prompt, mouseX + 15, mouseY - 10);
   }
-
-
 }
-
 
 function drawTitleScreen() {
   textAlign(CENTER, CENTER);
@@ -110,8 +138,21 @@ function drawGameScreen() {
   strokeWeight(2);
   rect(drawingArea.x, drawingArea.y, drawingArea.w, drawingArea.h);
 
+  let cx = drawingArea.x + drawingArea.w / 2;
+  let cy = drawingArea.y + drawingArea.h / 2;
+
+  stroke(100);
+  strokeWeight(1);
+
+  //crosshair in draw area
+  line(cx - 10, cy, cx + 10, cy);
+  line(cx, cy - 10, cx, cy + 10);
+
   noStroke();
+
   fill(0);
+
+  // drawing brush
   for (let pt of drawnPoints) {
     ellipse(pt.x, pt.y, 4, 4);
   }
@@ -187,17 +228,24 @@ class Button {
     let hoverColor = color(red(btnColor) + 20, green(btnColor) + 20, blue(btnColor) + 20);
 
     push();
+
     translate(this.x + this.w / 2 + shakeX, this.y + this.h / 2 + shakeY);
+
     rotate(this.currentAngle);
     scale(this.currentScale);
     rectMode(CENTER);
+
     noStroke();
+
     fill(isHovering ? hoverColor : btnColor);
     rect(0, 0, this.w, this.h, 12);
+
     fill(30);
+
     textAlign(CENTER, CENTER);
     textSize(16);
     text(this.label, 0, 0);
+
     pop();
   }
 
@@ -226,22 +274,29 @@ function getNextPrompt() {
     gameState = "build";
     return "";
   }
+
+
   let index = floor(random(prompts.length));
-  let next = prompts[index];
+  let nextPrompt = prompts[index];
+
+  //removes the prompt from the selection
   prompts.splice(index, 1);
-  return next;
+
+  return nextPrompt;
 }
 
 
 function mouseDragged() {
   if (gameState === "game") {
+    //checking if mouse is in drawing area
     if (
       mouseX > drawingArea.x && mouseX < drawingArea.x + drawingArea.w &&
       mouseY > drawingArea.y && mouseY < drawingArea.y + drawingArea.h
     ) {
       let dx = mouseX - pmouseX;
       let dy = mouseY - pmouseY;
-      let distSteps = max(abs(dx), abs(dy));
+      let distSteps = max(abs(mouseX - pmouseX), abs(dy));
+
       for (let i = 0; i < distSteps; i++) {
         let x = lerp(pmouseX, mouseX, i / distSteps);
         let y = lerp(pmouseY, mouseY, i / distSteps);
@@ -251,33 +306,37 @@ function mouseDragged() {
   }
 }
 
+// save picture of drawing
 function keyPressed() {
   if (gameState === "build" && key === 's') {
     saveCanvas('myCreature', 'png');
   }
 }
 
-
 function mousePressed() {
   if (gameState === "title" && startButton.isMouseHover()) {
+    buttonClickSound.play();
     startButton.onClick();
   }
 
   if (gameState === "game") {
     if (saveButton.isMouseHover()) {
-      let drawingCopy = drawnPoints.map(p => ({ x: p.x, y: p.y }));
+
+      buttonClickSound.play();
+
+      // saves the drawn part to savedDrawing array
+      let drawingCopy = drawnPoints.map(pt => ({ x: pt.x, y: pt.y }));
       savedDrawing.push(new DrawingPart(currentPrompt, drawingCopy));
+
+      // empties the current drawn point array
       drawnPoints = [];
+
       currentPrompt = getNextPrompt();
     }
+
     if (clearButton.isMouseHover()) {
+      buttonClickSound.play();
       drawnPoints = [];
-    }
-    if (showButton.isMouseHover()) {
-      if (!currentPlacingPart && savedDrawing.length > 0) {
-        drawnPoints = [...savedDrawing[savedDrawing.length - 1].drawing];
-      }
-      console.log(savedDrawing);
     }
   }
 
@@ -285,7 +344,7 @@ function mousePressed() {
     if (currentPlacingPart) {
       placedParts.push(new PlacedPart(currentPlacingPart, mouseX, mouseY));
 
-      // Remove used part from savedDrawing so it's not placed again
+      // removes drawn parts from savedDrawing (not placed again)
       let index = savedDrawing.indexOf(currentPlacingPart);
       if (index !== -1) {
         savedDrawing.splice(index, 1);
@@ -294,29 +353,39 @@ function mousePressed() {
       currentPlacingPart = null;
     }
   }
-
-
-
-
-
 }
 class PlacedPart {
   constructor(drawingPart, x, y) {
     let sumX = 0, sumY = 0;
+
     for (let pt of drawingPart.drawing) {
       sumX += pt.x;
       sumY += pt.y;
     }
+
     let centerX = sumX / drawingPart.drawing.length;
     let centerY = sumY / drawingPart.drawing.length;
 
-    this.drawing = drawingPart.drawing.map(pt => ({
-      x: pt.x - centerX,
-      y: pt.y - centerY
-    }));
+    //  changes scales of parts
+    let scaleFactor = 1;
+
+    let prompt = drawingPart.prompt.toLowerCase();
+
+    if (prompt === 'head') {
+      scaleFactor = 0.4;
+    } else if (prompt === 'body') {
+      scaleFactor = 0.6;
+    } else if (prompt === 'arms' || prompt === 'legs') {
+      scaleFactor = 0.6;
+    }
+
 
     this.offsetX = x;
     this.offsetY = y;
+    this.drawing = drawingPart.drawing.map(pt => ({
+      x: (pt.x - centerX) * scaleFactor,
+      y: (pt.y - centerY) * scaleFactor
+    }));
   }
 
   show() {
@@ -329,22 +398,4 @@ class PlacedPart {
     }
     pop();
   }
-}
-
-function drawSkyDecorations() {
-  // Sun
-  fill(255, 255, 100);
-  ellipse(80, 80, 80, 80);
-
-  // Clouds
-  fill(255, 255, 255, 230);
-  drawCloud(200, 100);
-  drawCloud(500, 70);
-  drawCloud(650, 130);
-}
-
-function drawCloud(x, y) {
-  ellipse(x, y, 60, 60);
-  ellipse(x + 30, y + 10, 50, 50);
-  ellipse(x - 30, y + 10, 50, 50);
 }
