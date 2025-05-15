@@ -27,8 +27,8 @@ let placedParts = [];
 
 function preload() {
   //load the music
-  backgroundMusic = loadSound('assets/background_music.mp3');
-  buttonClickSound = loadSound('assets/button_click.mp3');
+  backgroundMusic = loadSound('background_music.mp3');
+  buttonClickSound = loadSound('button_click.mp3');
 }
 
 
